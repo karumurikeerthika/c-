@@ -1,0 +1,11 @@
+class Test {
+    int num;
+public:
+    Test(): num(8) {}
+    void operator++() { num = num + 2; } // Overloading unary ++
+    void Print() { std::cout << num; }
+};
+Usage:
+Test t;
+++t;
+t.Print(); // Outputs: 10
