@@ -1,0 +1,83 @@
+class Solution {
+public:
+    int numberOfSequence(int n, vector<int>& sick) {
+        const int MOD = 1e9 + 7; // Modulus value for operations
+
+        // Initializing vectors and variables
+        vector<int> xs; // Vector to store segment lengths without sick indices
+        vector<bool> a(n, 0); // Vector to mark indices as sick or healthy
+        
+        // Marking indices as sick
+        for (auto i : sick) {
+            a[i] = 1;
+        }
+
+        // Finding lengths of segments without sick indices
+        for (int i = 0, cur = 0; i < n; i++) {
+            if (!a[i]) {
+                cur++;
+            }
+            if (!a[i] && (i == n - 1 || a[i + 1])) {
+                xs.push_back(cur);
+                cur = 0;
+            }
+        }
+
+        // Lambda functions for modular arithmetic operations
+        auto mult = [&](int a, int b) {
+            return (1LL * a * b) % MOD;
+        };
+        auto modexp = [&](int a, int b) {
+            int r = 1;
+            while (b) {
+                if (b & 1) {
+                    r = mult(r, a);
+                }
+                a = mult(a, a);
+                b >>= 1;
+            }
+            return r;
+        };
+        auto inverse = [&](int x) {
+            return modexp(x, MOD - 2);
+        };
+
+        // Pre-computing powers of 2 and factorials up to 'n'
+        vector<int> pow2(n + 1);
+        pow2[0] = 1;
+        for (int i = 1; i <= n; i++) {
+            pow2[i] = mult(pow2[i - 1], 2);
+        }
+        vector<int> fac(n + 1);
+        fac[0] = 1;
+        for (int i = 1; i <= n; i++) {
+            fac[i] = mult(fac[i - 1], i);
+        }
+
+        int Y = n - sick.size(); // Number of healthy indices
+        int A = 0, B = 0;
+
+        // Handling the cases for segments not starting or ending at the boundaries
+        if (sick.front() != 0) {
+            A = xs.front();
+            xs.erase(xs.begin());
+        }
+        if (sick.back() != n - 1) {
+            B = xs.back();
+            xs.pop_back();
+        }
+
+        int ans = fac[Y]; // Initializing answer with factorial of healthy indices
+
+        // Calculating answer by considering segment lengths and factorials
+        for (int x : xs) {
+            ans = mult(ans, inverse(fac[x]));
+            ans = mult(ans, pow2[x - 1]);
+        }
+        ans = mult(ans, inverse(fac[A]));
+        ans = mult(ans, inverse(fac[B]));
+
+        return ans; // Returning the final answer
+    }
+};
+
